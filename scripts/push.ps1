@@ -50,7 +50,8 @@ $srcRoot = (Resolve-Path $Source).Path
 if ($Languages) {
   $missing = @()
   foreach ($lang in ($Languages -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })) {
-    $f = Join-Path $srcRoot "README.$lang.md"
+    $fname = if ($lang -eq 'en') { 'README.md' } else { "README.$lang.md" }
+    $f = Join-Path $srcRoot $fname
     if (-not (Test-Path $f)) { $missing += $lang }
   }
   if ($missing.Count -gt 0) {
