@@ -2,6 +2,13 @@
 
 All notable changes to `gh-publisher` are documented here. The skill follows [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] — 2026-08-24 — push.ps1 empty-repo 409 fix
+
+Discovered while pushing code-forge-skill: on a brand-new empty repo, probing `git/refs/heads/main` returns HTTP 409 "Git Repository is empty"; gh writes it to stderr, and under PS 7.2+ the script-wide `$ErrorActionPreference='Stop'` turns native stderr into a terminating error — killing the script before the empty-repo init could run.
+
+- **`scripts/push.ps1`**: `Invoke-GhApi` now guards the native `gh` call with a temporary EAP downgrade (`Continue`, restored in a `finally` block); success/failure is decided by `$LASTEXITCODE`, not by stderr.
+- Verified end-to-end on a fresh empty repo: auto-seed via Contents API → Git Database batch commit → exit 0.
+
 ## [1.3.0] — 2026-08-24 — multilingual is now a DEFAULT push step
 
 Driven by a real gap: pushing a skill repo without the 10-language step (create-generate-skill v4.8.0 shipped single-language).

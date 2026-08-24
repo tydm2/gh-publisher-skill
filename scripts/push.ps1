@@ -106,10 +106,17 @@ New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 
 function Invoke-GhApi {
   # runs gh api, returns ($ok, $textOrError); never leaks token
+  # NOTE: under $ErrorActionPreference='Stop' (PS 7.2+), stderr from a native
+  # command becomes a terminating error. gh writes expected failures (e.g. the
+  # "Git Repository is empty" HTTP 409 on a fresh repo) to stderr, which used to
+  # kill the script before the empty-repo init could run. Guard the call so the
+  # exit code decides, not stderr.
   param([string]$Method, [string]$Endpoint, [string]$BodyFile = '')
   $args = @('api', '--method', $Method, $Endpoint)
   if ($BodyFile) { $args += @('--input', $BodyFile) }
-  $out = (& $gh @args 2>&1 | Out-String)
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try { $out = (& $gh @args 2>&1 | Out-String) } finally { $ErrorActionPreference = $prevEap }
   if ($LASTEXITCODE -ne 0) { return @($false, $out.Trim()) }
   return @($true, $out.Trim())
 }

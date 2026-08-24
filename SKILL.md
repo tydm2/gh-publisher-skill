@@ -2,9 +2,10 @@
 name: gh-publisher
 description: Use when the user wants to publish files, a skill, or a project to a GitHub repository — especially when git is unavailable or the repo is empty. Publishes without git via the gh CLI + GitHub REST API (Contents / Git Database), with a built-in scripts/push.ps1 for one-command pushes; tokens never enter chat/logs/files, files are secret-scanned before push, output is masked; adapts to DSH/Codex/Claude Code. Not for full git history or branch merges.
 metadata:
-  version: 1.3.0
+  version: 1.3.1
   languages: [en]
   changelog:
+    - 1.3.1: push.ps1 fix — under PS 7.2+ the script-wide $ErrorActionPreference='Stop' turned gh's stderr on expected failures (HTTP 409 "Git Repository is empty" when probing refs of a brand-new repo) into a terminating error that killed the script before the empty-repo init could run; Invoke-GhApi now temporarily downgrades EAP (restored in finally) so $LASTEXITCODE decides, not stderr. Verified end-to-end on a fresh empty repo (auto-seed → batch commit → exit 0)
     - 1.3.0: multilingual is now a DEFAULT push step — before pushing a skill/doc project, generate the 10-language READMEs (parallel agents), run -Languages/-RequireI18n checks, then push; skip only on explicit user opt-out. i18n.md gained an auto-trigger & execution-flow section; push.ps1 gained -RequireI18n (missing language files fail the push)
     - 1.2.0: multilingual publish — configurable local language (zh/en via config.local.json), 10 release languages (en/zh-CN/hi/es/fr/ar/bn/pt/ru/ja), references/i18n.md protocol, push.ps1 -Languages readiness check
     - 1.1.0: gh binary auto-detect (-GhPath) + GH_CONFIG_DIR auto-detect + robust empty-repo detection (git refs) + repo-not-found hint + surfaced API errors + environment self-check section
